@@ -39,11 +39,6 @@
               </template>
             </n-input>
           </n-form-item>
-          <n-form-item path="isCaptcha">
-            <div class="w-full">
-              <mi-captcha width="384" theme-color="#2d8cf0" :logo="logo" @success="onAuthCode" />
-            </div>
-          </n-form-item>
           <n-form-item class="default-color">
             <div class="flex justify-between">
               <div class="flex-initial">
@@ -132,36 +127,30 @@
 
       const router = useRouter();
       const route = useRoute();
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
-        formRef.value.validate(async (errors) => {
-          if (!errors) {
-            const { username, password } = state.formInline;
-            message.loading('登录中...');
-            state.loading = true;
+        const { username, password } = state.formInline;
+        message.loading('登录中...');
+        state.loading = true;
 
-            const params: FormState = {
-              username,
-              password,
-            };
+        const params: FormState = {
+          username,
+          password,
+        };
 
-            const { code, message: msg } = await userStore.login(params);
+        const { code, message: msg } = await userStore.login(params);
 
-            if (code == ResultEnum.SUCCESS) {
-              const toPath = decodeURIComponent((route.query?.redirect || '/') as string);
-              message.success('登录成功！');
-              router.replace(toPath).then((_) => {
-                if (route.name == 'login') {
-                  router.replace('/');
-                }
-              });
-            } else {
-              message.info(msg || '登录失败');
+        if (code == ResultEnum.SUCCESS) {
+          const toPath = decodeURIComponent((route.query?.redirect || '/') as string);
+          message.success('登录成功！');
+          router.replace(toPath).then((_) => {
+            if (route.name == 'login') {
+              router.replace('/');
             }
-          } else {
-            message.error('请填写完整信息，并且进行验证码校验');
-          }
-        });
+          });
+        } else {
+          message.info(msg || '登录失败');
+        }
       };
 
       function onAuthCode() {
